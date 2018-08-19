@@ -1,0 +1,17 @@
+[
+  {
+    "name": "php-fpm",
+    "image": "${php_fpm_image_url}",
+    "essential": true,
+    "network_mode": "awsvpc",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "application/${app_name}",
+        "awslogs-region": "${aws_region}",
+        "awslogs-stream-prefix": "db-migration-task"
+      }
+    },
+    "entrypoint": ["php", "/var/www/artisan", "migrate", "--force"]
+  }
+]

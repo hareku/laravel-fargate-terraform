@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - pip install awscli --upgrade --user
+      # - apt-get update -y
+      # - apt-get install -y jq
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - NGINX_IMAGE_REPO_URI=1234567890.dkr.ecr.ap-northeast-1.amazonaws.com/application-nginx
+      - PHP_FPM_IMAGE_REPO_URI=1234567890.dkr.ecr.ap-northeast-1.amazonaws.com/application-php-fpm
+  build:
+    commands:
+      - docker build -t $NGINX_IMAGE_REPO_URI:latest -f Dockerfile_nginx .
+      - docker tag $NGINX_IMAGE_REPO_URI:latest $NGINX_IMAGE_REPO_URI:$IMAGE_TAG
+      - docker build -t $PHP_FPM_IMAGE_REPO_URI:latest -f Dockerfile_php_fpm .
+      - docker tag $PHP_FPM_IMAGE_REPO_URI:latest $PHP_FPM_IMAGE_REPO_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - docker push $NGINX_IMAGE_REPO_URI:latest
+      - docker push $NGINX_IMAGE_REPO_URI:$IMAGE_TAG
+      - docker push $PHP_FPM_IMAGE_REPO_URI:latest
+      - docker push $PHP_FPM_IMAGE_REPO_URI:$IMAGE_TAG
+      - printf '[{"name":"rp","imageUri":"%s"},{"name":"php-fpm","imageUri":"%s"}]' $NGINX_IMAGE_REPO_URI:$IMAGE_TAG $PHP_FPM_IMAGE_REPO_URI:$IMAGE_TAG > imagedefinitions.json
+      # - aws ecs run-task --launch-type FARGATE --cluster application-cluster --task-definition application-db-migration --network-configuration "awsvpcConfiguration={subnets=[subnet-123, subnet-123],securityGroups=[sg-123],assignPublicIp=ENABLED}" > run-task.log
+      # - TASK_ARN=$(jq -r '.tasks[0].taskArn' run-task.log)
+      # - aws ecs wait tasks-stopped --cluster arn:aws:ecs:ap-northeast-1:1234567890:cluster/application-cluster --tasks $TASK_ARN
+artifacts:
+  files: imagedefinitions.json
