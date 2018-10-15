@@ -40,6 +40,11 @@ RUN apt-get install libzip-dev -y && \
     docker-php-ext-install zip
 
 ###########################################################################
+# Mysql Client:
+###########################################################################
+RUN apt-get install mysql-client -y
+
+###########################################################################
 # PHP Memcached:
 ###########################################################################
 RUN curl -L -o /tmp/memcached.tar.gz "https://github.com/php-memcached-dev/php-memcached/archive/php7.tar.gz";
