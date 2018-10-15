@@ -1,11 +1,13 @@
 FROM php:7.2-fpm
 
+LABEL maintainer="hareku <hareku908@gmail.com>"
+
 USER root
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     curl \
-    cron \
+    busybox-static \
     libmemcached-dev \
     libz-dev \
     libpq-dev \
@@ -69,8 +71,7 @@ RUN apt-get install -y libmagickwand-dev imagemagick && \
 ###########################################################################
 # Crontab
 ###########################################################################
-COPY ./crontab /etc/cron.d
-RUN chmod -R 644 /etc/cron.d
+COPY ./crontab /var/spool/cron/crontabs/root
 
 ###########################################################################
 # Opcache:
