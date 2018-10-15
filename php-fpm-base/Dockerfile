@@ -57,6 +57,13 @@ RUN mkdir -p memcached \
     && docker-php-ext-enable memcached
 
 ###########################################################################
+# PHP REDIS EXTENSION:
+###########################################################################
+RUN printf "\n" | pecl install -o -f redis \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
+
+###########################################################################
 # Image optimizers:
 ###########################################################################
 RUN apt-get install -y jpegoptim optipng pngquant gifsicle
